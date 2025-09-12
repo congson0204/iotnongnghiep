@@ -166,7 +166,7 @@
       <div class="small" id="lastAction">—</div>
     </div>
   </section>
-
+  <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
   <script>
     const fields=['soilTemp','soilMoisture','soilPH','soilEC','phosphorus','nitrogen','potassium','airTemp','airHumidity'];
     const units={soilTemp:'°C',soilMoisture:'%',soilPH:'pH',soilEC:'mS/cm',phosphorus:'mg/kg',nitrogen:'mg/kg',potassium:'mg/kg',airTemp:'°C',airHumidity:'%'};
@@ -203,7 +203,7 @@
       if(k==='soilPH') updateBar(c,Number(v),14);
     }
 
-    function makeDemo(){const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);return{soilTemp:r(18,30),soilMoisture:r(20,60),soilPH:r(5.8,7.2),soilEC:r(0.5,2),phosphorus:r(10,40),nitrogen:r(20,60),potassium:r(80,200),airTemp:r(22,35),airHumidity:r(40,85),irrigationOn:Math.random()<0.3,mode:'AUTO'}}
+    //function makeDemo(){const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);return{soilTemp:r(18,30),soilMoisture:r(20,60),soilPH:r(5.8,7.2),soilEC:r(0.5,2),phosphorus:r(10,40),nitrogen:r(20,60),potassium:r(80,200),airTemp:r(22,35),airHumidity:r(40,85),irrigationOn:Math.random()<0.3,mode:'AUTO'}}
 
     function applyPayload(p){fields.forEach(k=>{if(p&&p[k]!==undefined)updateCard(k,p[k])});if(p&&typeof p.irrigationOn==='boolean')setIrrigationState(p.irrigationOn)}
 
@@ -214,7 +214,26 @@
     document.getElementById('stopIrrigation').onclick=()=>{setIrrigationState(false);lastActionEl.textContent='Dừng tưới'}
 
     //applyPayload(makeDemo());
-     applyPayload({ soilTemp: 30 })
+    //TEST ĐẨY  
+    applyPayload({
+  soilTemp: 26.4,
+  soilMoisture: 52,
+  soilPH: 6.5,
+  soilEC: 1.2,
+  phosphorus: 28,
+  nitrogen: 45,
+  potassium: 150,
+  airTemp: 30.1,
+  airHumidity: 68
+});
+     
+
+
+
+
+
+
+    
     // === Auto-height for parent page (iframe) ===
     function postHeight(){
       const h = document.documentElement.scrollHeight;
@@ -226,7 +245,7 @@
     window.addEventListener('load', postHeight);
     window.addEventListener('resize', postHeight);
   </script>
-<script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+
 
 
 
