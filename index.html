@@ -274,8 +274,17 @@ eraWidget.init({
         // Kiểm tra trạng thái mới của đèn LED, nếu thay đổi thì cập nhật
        //applyPayload({soilTemp:valuesoilTemp});
       //applyPayload({soilMoisture:valuesoilTemp,soilPH:7});
-      applyPayload({
-        soilTemp: 45,
+ 
+
+
+      },   
+
+});
+
+
+
+     applyPayload({
+        soilTemp: valuesoilTemp,
         soilMoisture: 52,
         soilPH: 6.5,
         soilEC: 1.2,
@@ -285,15 +294,6 @@ eraWidget.init({
         airTemp: 30.1,
         airHumidity: 68
 });
-
-
-      },   
-
-});
-
-
-
-
 
 
 
