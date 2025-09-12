@@ -258,36 +258,34 @@ eraWidget.init({
         configairHumidity = configuration.realtime_configs[8];  // Lưu cấu hình đèn LED
         action = configuration.actions;  // Lưu các hành động điều khiển
       },
-    onValues: (values) => {
-        // Cập nhật giá trị nhận được từ widget
-        const valuesoilTemp =  values[configsoilTemp.id].value;  // Giá trị nhiệt độ đất
-        const valuesoilMoisture =   values[configsoilMoisture.id].value; 
-        const valuesoilPH = values[configsoilPH.id].value; 
-        const valuesoilEC = values[configsoilEC.id].value; 
-        const valuephosphorus = values[configphosphorus.id].value; 
-        const valuenitrogen = values[confignitrogen.id].value; 
-        const valuepotassium = values[configpotassium.id].value; 
-        const valueairTemp = values[configairTemp.id].value; 
-        const valueairHumidity = values[configairHumidity.id].value; 
-        //action = configuration.actions;  // Lưu các hành động điều khiển
-        // Cập nhật giao diện người dùng với giá trị mới
-        // Kiểm tra trạng thái mới của đèn LED, nếu thay đổi thì cập nhật
-       //applyPayload({soilTemp:valuesoilTemp});
-      //applyPayload({soilMoisture:valuesoilTemp,soilPH:7});
-              applyPayload({
-                soilTemp: valuesoilTemp,
-                soilMoisture: valuesoilMoisture,
-                soilPH: valuesoilPH,
-                soilEC: valuesoilEC,
-                phosphorus: valuephosphorus,
-                nitrogen: valuenitrogen,
-                potassium: valuepotassium,
-                airTemp: valueairTemp,
-                airHumidity: valueairHumidity
-      });
+    onValues: (values = {}) => {
+  // helper: lấy giá trị an toàn theo 1 config
+  const pick = (cfg) => {
+    if (!cfg || !cfg.id) return undefined;
+    const slot = values[cfg.id];
+    if (!slot) return undefined;
+    let v = slot.value;
+    // Ép số nếu là chuỗi số
+    if (typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v))) v = Number(v);
+    return v;
+  };
 
-      },   
+  // Gom payload theo đúng 9 key UI bạn đang dùng
+  const payload = {
+    soilTemp:     pick(configsoilTemp),
+    soilMoisture: pick(configsoilMoisture),
+    soilPH:       pick(configsoilPH),
+    soilEC:       pick(configsoilEC),
+    phosphorus:   pick(configphosphorus),
+    nitrogen:     pick(confignitrogen),
+    potassium:    pick(configpotassium),
+    airTemp:      pick(configairTemp),
+    airHumidity:  pick(configairHumidity)
+  };
 
+  // Đẩy vào UI (applyPayload tự bỏ qua các key undefined)
+  applyPayload(payload);
+},
 });
 
 
