@@ -272,13 +272,26 @@ eraWidget.init({
         //action = configuration.actions;  // Lưu các hành động điều khiển
         // Cập nhật giao diện người dùng với giá trị mới
         // Kiểm tra trạng thái mới của đèn LED, nếu thay đổi thì cập nhật
-       applyPayload({soilTemp:valuesoilTemp});
-      },
+       //applyPayload({soilTemp:valuesoilTemp});
+      //applyPayload({soilMoisture:valuesoilTemp,soilPH:7});
+      applyPayload({
+        soilTemp: 45,
+        soilMoisture: 52,
+        soilPH: 6.5,
+        soilEC: 1.2,
+        phosphorus: 28,
+        nitrogen: 45,
+        potassium: 150,
+        airTemp: 30.1,
+        airHumidity: 68
+});
 
 
-
+      },   
 
 });
+
+
 
 
 
