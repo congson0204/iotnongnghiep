@@ -229,62 +229,70 @@ applyPayload({
 });
   */   
 /// TEST ERA
+
 const eraWidget = new EraWidget();
 
-let configsoilTemp=null, configsoilMoisture=null, configsoilPH=null, configsoilEC=null,
-    configphosphorus=null, confignitrogen=null, configpotassium=null, configairTemp=null, configairHumidity=null,
-    actions = [];
-
+ let configsoilTemp = null, configsoilMoisture  = null,configsoilPH=null,configsoilEC=null,configphosphorus=null,confignitrogen=null,  configpotassium=null, configairTemp=null, configairHumidity=null, actions = [];
 eraWidget.init({
-  needRealtimeConfigs: true,
-  needHistoryConfigs: false,       // bạn chưa dùng history
-  needActions: true,
-  maxRealtimeConfigsCount: 16,     // >= 9 để nhận đủ cấu hình
-  maxActionsCount: 8,
-  minRealtimeConfigsCount: 0,
-  minHistoryConfigsCount: 0,
-  minActionsCount: 0,
+      needRealtimeConfigs: true,         /* Cần giá trị hiện thời */
+      needHistoryConfigs: true,          /* Cần giá trị lịch sử */
+      needActions: true,                 /* Cần các hành động (ví dụ Bật/Tắt đèn) */
+      maxRealtimeConfigsCount: 9,        /* Số lượng tối đa giá trị hiện thời */
+      maxHistoryConfigsCount: 9,         /* Số lượng tối đa giá trị lịch sử */
+      maxActionsCount: 2,                /* Số lượng tối đa các hành động có thể kích hoạt */
+      minRealtimeConfigsCount: 0,        /* Số lượng tối thiểu giá trị hiện thời */
+      minHistoryConfigsCount: 0,         /* Số lượng tối thiểu giá trị lịch sử */
+      minActionsCount: 0,                /* Số lượng tối thiểu hành động */
 
-  onConfiguration: (configuration = {}) => {
-    const rc = configuration.realtime_configs || [];
-    actions = configuration.actions || [];
+     onConfiguration: (configuration) => {
 
-    // Map theo thứ tự như bạn đang làm (có kiểm tra độ dài)
-    if (rc.length >= 9) {
-      configsoilTemp     = rc[0];
-      configsoilMoisture = rc[1];
-      configsoilPH       = rc[2];
-      configsoilEC       = rc[3];
-      configphosphorus   = rc[4];
-      confignitrogen     = rc[5];
-      configpotassium    = rc[6];
-      configairTemp      = rc[7];
-      configairHumidity  = rc[8];
-    } else {
-      console.warn('Thiếu realtime_configs: nhận', rc.length, 'cấu hình');
-    }
-  },
+        // Lưu các cấu hình khi nhận được từ widget
+        configsoilTemp = configuration.realtime_configs[0];  // Lưu cấu hình nhiệt độ ĐẤT
+        configsoilMoisture = configuration.realtime_configs[1];  // Lưu cấu hình độ ẩm ĐẤT
+        configsoilPH = configuration.realtime_configs[2];  // Lưu cấu hình PH
+        configsoilEC = configuration.realtime_configs[3];  // Lưu cấu hình đèn LED
+        configphosphorus = configuration.realtime_configs[4];  // Lưu cấu hình đèn LED
+        confignitrogen = configuration.realtime_configs[5];  // Lưu cấu hình đèn LED
+        configpotassium = configuration.realtime_configs[6];  // Lưu cấu hình đèn LED
+        configairTemp = configuration.realtime_configs[7];  // Lưu cấu hình đèn LED
+        configairHumidity = configuration.realtime_configs[8];  // Lưu cấu hình đèn LED
+        action = configuration.actions;  // Lưu các hành động điều khiển
+      },
+    onValues: (values) => {
+        // Cập nhật giá trị nhận được từ widget
+        const valuesoilTemp =  values[configsoilTemp.id].value;  // Giá trị nhiệt độ đất
+        const valuesoilMoisture =   values[configsoilMoisture.id].value; 
+        const valuesoilPH = values[configsoilPH.id].value; 
+        const valuesoilEC = values[configsoilEC.id].value; 
+        const valuephosphorus = values[configphosphorus.id].value; 
+        const valuenitrogen = values[confignitrogen.id].value; 
+        const valuepotassium = values[configpotassium.id].value; 
+        const valueairTemp = values[configairTemp.id].value; 
+        const valueairHumidity = values[configairHumidity.id].value; 
+        //action = configuration.actions;  // Lưu các hành động điều khiển
+        // Cập nhật giao diện người dùng với giá trị mới
+        // Kiểm tra trạng thái mới của đèn LED, nếu thay đổi thì cập nhật
+       //applyPayload({soilTemp:valuesoilTemp});
+      //applyPayload({soilMoisture:valuesoilTemp,soilPH:7});
+              applyPayload({
+                soilTemp: valuesoilTemp,
+                soilMoisture: valuesoilMoisture,
+                soilPH: valuesoilPH,
+                soilEC: valuesoilEC,
+                phosphorus: valuephosphorus,
+                nitrogen: valuenitrogen,
+                potassium: valuepotassium,
+                airTemp: valueairTemp,
+                airHumidity: valueairHumidity
+      });
 
-  onValues: (values = {}) => {
-    // helper an toàn
-    const pick = (cfg) => (cfg && cfg.id && values[cfg.id]) ? values[cfg.id].value : undefined;
+      },   
 
-    const payload = {
-      soilTemp:     pick(configsoilTemp),
-      soilMoisture: pick(configsoilMoisture),
-      soilPH:       pick(configsoilPH),        // đã sửa: dùng configsoilPH
-      soilEC:       pick(configsoilEC),
-      phosphorus:   pick(configphosphorus),
-      nitrogen:     pick(confignitrogen),
-      potassium:    pick(configpotassium),
-      airTemp:      pick(configairTemp),
-      airHumidity:  pick(configairHumidity)
-    };
-
-    // Đẩy vào UI qua hàm sẵn có của bạn
-    applyPayload(payload);
-  }
 });
+
+
+
+
 
 
     
