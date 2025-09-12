@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IFrame bảng điều khiển tưới cây</title>
@@ -212,8 +213,8 @@
     document.getElementById('pulseIrrigation').onclick=()=>{lastActionEl.textContent='Nháy tưới 10s'}
     document.getElementById('stopIrrigation').onclick=()=>{setIrrigationState(false);lastActionEl.textContent='Dừng tưới'}
 
-    applyPayload(makeDemo());
-
+    //applyPayload(makeDemo());
+     applyPayload({ soilTemp: 30 })
     // === Auto-height for parent page (iframe) ===
     function postHeight(){
       const h = document.documentElement.scrollHeight;
@@ -225,5 +226,9 @@
     window.addEventListener('load', postHeight);
     window.addEventListener('resize', postHeight);
   </script>
+<script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+
+
+
 </body>
 </html>
