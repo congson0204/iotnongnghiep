@@ -3,7 +3,8 @@
 <head>
 
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
   <title>IFrame bảng điều khiển tưới cây</title>
   <style>
     :root{
@@ -14,15 +15,7 @@
     }
     [data-theme="light"]{--bg:#f6f7fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#16a34a;--ring:#e2e8f0;--bar-bg:#e2e8f0;--bar-fill:#2563eb}
     *{box-sizing:border-box}
-     /* ===== FULL-SCREEN theo viewport trên mobile ===== */
-    html, body { height: 100%; margin: 0; }
-    /* Ưu tiên dynamic viewport height để tránh nhảy khi thanh URL/toolbar ẩn/hiện */
-    body { height: 100dvh; overflow: auto; }
-    @supports(height: 100svh){
-      body { height: 100svh; } /* fallback cho trình duyệt dùng svh */
-    }
-    /* ================================================ */
-
+ 
 
 
 
@@ -95,10 +88,24 @@
     @media(max-width:700px){.ring-wrap,.ring{width:96px;height:96px}}
     @media(max-width:480px){.ring-wrap,.ring{width:84px;height:84px}}
     @media(max-width:360px){.ring-wrap,.ring{width:72px;height:72px}}
-    
+
+
+          /* Tự co theo nội dung + safe-area cho iOS */
+      html, body { margin:0; padding:0; width:100%; min-height:100%; overflow-x:hidden; }
+      body { background: var(--bg); }
+
+      #app{
+        padding-top: max(16px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        display: flex; flex-direction: column; gap: 12px;
+      }
+      
   </style>
 </head>
 <body>
+  <div id="app">
   <header>
     <div>
       <div class="title">GIÁM SÁT VÀ PHÂN TÍCH CHỈ SỐ TRONG ĐẤT</div>
@@ -199,6 +206,7 @@
       <div class="small" id="lastAction">—</div>
     </div>
   </section>
+  </div>
   <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
   <script>
     const fields=['soilTemp','soilMoisture','soilPH','soilEC','phosphorus','nitrogen','potassium','airTemp','airHumidity'];
@@ -344,6 +352,7 @@ eraWidget.init({
 
 
   </script>
+
 
 
 
