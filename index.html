@@ -30,10 +30,32 @@
     header{display:flex;align-items:center;justify-content:space-between}
     .title{font-weight:700}
     .sub{font-size:12px;color:var(--muted)}
+    /*
     .grid{display:grid;gap:12px;grid-template-columns:repeat(5,1fr)}
     @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:480px){.grid{grid-template-columns:1fr}}
+    */
+ 
+
+
+/* Lưới tự co giãn: không bị cắt cột trên iFrame hẹp */
+    .grid{
+      display:grid;
+      gap:clamp(8px,2vw,12px);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    /* Ép 1 cột sớm hơn để tránh bị cắt trong layout mobile của E-Ra */
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Ngăn tràn ngang gây cắt cột/scroll ngang khó chịu */
+    html, body{ width:100%; overflow-x:hidden; }
+
+
+ 
     .card{background:var(--card);border:1px solid var(--ring);border-radius:14px;padding:14px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.15)}
     .label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
     .label .icon{font-size:20px}
