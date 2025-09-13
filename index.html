@@ -14,7 +14,18 @@
     }
     [data-theme="light"]{--bg:#f6f7fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#16a34a;--ring:#e2e8f0;--bar-bg:#e2e8f0;--bar-fill:#2563eb}
     *{box-sizing:border-box}
-    html,body{height:100%}
+     /* ===== FULL-SCREEN theo viewport trên mobile ===== */
+    html, body { height: 100%; margin: 0; }
+    /* Ưu tiên dynamic viewport height để tránh nhảy khi thanh URL/toolbar ẩn/hiện */
+    body { height: 100dvh; overflow: auto; }
+    @supports(height: 100svh){
+      body { height: 100svh; } /* fallback cho trình duyệt dùng svh */
+    }
+    /* ================================================ */
+
+
+
+
     body{margin:0;font-family:system-ui,Segoe UI,Roboto; background:var(--bg);color:var(--text);display:flex;flex-direction:column;gap:12px;padding:16px}
     header{display:flex;align-items:center;justify-content:space-between}
     .title{font-weight:700}
@@ -289,12 +300,12 @@ eraWidget.init({
 });
 
   eraWidget.ready();       // báo đã sẵn sàng để E-Ra bắt đầu gửi dữ liệu
-  mobileHeight(300);       // ấn định chiều cao iframe 300px cho mobile/parent
+  //mobileHeight(300);       // ấn định chiều cao iframe 300px cho mobile/parent
 
 
 
 
-    
+    /*
     // === Auto-height for parent page (iframe) ===
     function postHeight(){
       const h = document.documentElement.scrollHeight;
@@ -305,6 +316,10 @@ eraWidget.init({
     new ResizeObserver(postHeight).observe(document.documentElement);
     window.addEventListener('load', postHeight);
     window.addEventListener('resize', postHeight);
+*/
+
+
+
   </script>
 
 
