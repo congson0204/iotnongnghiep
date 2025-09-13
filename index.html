@@ -70,7 +70,9 @@
     /* Progress bar */
     .bar-wrap{width:100%;height:14px;background:var(--bar-bg);border-radius:6px;overflow:hidden;margin-top:6px}
     .bar-fill{height:100%;background:var(--bar-fill);width:0%;transition:width .5s ease}
-   
+   /* Ẩn số ngoài vòng của Độ ẩm trong đất */
+    [data-key="soilMoisture"] > .flex > .value { display: none !important; }
+
   </style>
 </head>
 <body>
@@ -105,7 +107,7 @@
               </svg>
               <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
             </div>
-           
+           <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
           </div>
           <div class="trend" data-trend></div>
         </div>
