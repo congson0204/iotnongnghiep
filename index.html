@@ -70,9 +70,6 @@
     /* Progress bar */
     .bar-wrap{width:100%;height:14px;background:var(--bar-bg);border-radius:6px;overflow:hidden;margin-top:6px}
     .bar-fill{height:100%;background:var(--bar-fill);width:0%;transition:width .5s ease}
-   /* Ẩn số ngoài vòng của Độ ẩm trong đất */
-    [data-key="soilMoisture"] > .flex > .value { display: none !important; }
-
   </style>
 </head>
 <body>
@@ -107,7 +104,7 @@
               </svg>
               <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
             </div>
-           <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
+            <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
           </div>
           <div class="trend" data-trend></div>
         </div>
@@ -182,7 +179,7 @@
   </div>
 
   <!-- Era SDK -->
-  <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+  <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.6/src/index.js"></script>
   <script>
     const fields=['soilTemp','soilMoisture','soilPH','soilEC','phosphorus','nitrogen','potassium','airTemp','airHumidity'];
     const units={soilTemp:'°C',soilMoisture:'%',soilPH:'pH',soilEC:'mS/cm',phosphorus:'mg/kg',nitrogen:'mg/kg',potassium:'mg/kg',airTemp:'°C',airHumidity:'%'};
@@ -233,7 +230,6 @@
     document.getElementById('stopIrrigation').onclick=()=>{ setIrrigationState(false); lastActionEl.textContent='Dừng tưới'; };
 
     /* ===== ERA WIDGET ===== */
-    const eraWidget = new EraWidget();
     let configsoilTemp=null, configsoilMoisture=null, configsoilPH=null, configsoilEC=null,
         configphosphorus=null, confignitrogen=null, configpotassium=null, configairTemp=null, configairHumidity=null,
         actions=[];
@@ -244,7 +240,7 @@
       let v=slot.value; if(typeof v==='string'&&v.trim()!==''&&!isNaN(Number(v))) v=Number(v);
       return v;
     };
-    
+
     eraWidget.init({
       ready:false,
       needRealtimeConfigs:true,
