@@ -1,36 +1,35 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>IFrame bảng điều khiển tưới cây</title>
   <style>
     :root{
-      --bg:#0f172a; --card:#111827ee; --text:#e5e7eb; --muted:#94a3b8;
-      --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; --ok:#60a5fa; --ring:#1f2937;
+      --bg:#0f172a; --card:#111827ee; --text:#e5e7eb;
+      --muted:#94a3b8; --accent:#22c55e; --warn:#f59e0b;
+      --danger:#ef4444; --ok:#60a5fa; --ring:#1f2937;
       --humid:#22c55e; --bar-bg:#1e293b; --bar-fill:#60a5fa;
     }
-    [data-theme="light"]{--bg:#f6f7fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#16a34a;--ring:#e2e8f0;--bar-bg:#e2e8f0;--bar-fill:#2563eb}
+    [data-theme="light"]{
+      --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#475569;
+      --accent:#16a34a; --ring:#e2e8f0; --bar-bg:#e2e8f0; --bar-fill:#2563eb
+    }
     *{box-sizing:border-box}
 
-    /* Nền trang con trong suốt để hòa với app E-Ra */
     html, body { margin:0; padding:0; width:100%; min-height:100%; overflow-x:hidden; }
     body { background: transparent; font-family:system-ui, Segoe UI, Roboto; color:var(--text); }
 
-    /* Vỏ + panel tối canh giữa */
     .shell{
-      max-width:1180px;
-      margin:0 auto;
+      max-width:1180px; margin:0 auto;
       padding-top:max(12px, env(safe-area-inset-top));
       padding-bottom:max(12px, env(safe-area-inset-bottom));
       padding-left:max(12px, env(safe-area-inset-left));
       padding-right:max(12px, env(safe-area-inset-right));
     }
     .panel{
-      background:#0b1220;
-      border:1px solid var(--ring);
-      border-radius:16px;
-      padding:16px;
+      background:#0b1220; border:1px solid var(--ring);
+      border-radius:16px; padding:16px;
       box-shadow:0 8px 24px rgba(0,0,0,.25);
     }
 
@@ -71,12 +70,12 @@
     .bar-wrap{width:100%;height:14px;background:var(--bar-bg);border-radius:6px;overflow:hidden;margin-top:6px}
     .bar-fill{height:100%;background:var(--bar-fill);width:0%;transition:width .5s ease}
 
-    /* Ẩn số hiển thị bên ngoài vòng tròn cho Độ ẩm trong đất */
-      [data-key="soilMoisture"] .flex > .value {
-        display: none !important;
-      }
-      [data-key="airHumidity"] .flex > .value { display:none !important; }
+    /* Ẩn số hiển thị bên ngoài vòng tròn cho Độ ẩm trong đất & không khí (giữ trung tâm) */
+    [data-key="soilMoisture"] .flex > .value { display: none !important; }
+    [data-key="airHumidity"] .flex > .value { display: none !important; }
 
+    /* Ẩn nút Nháy tưới 10s nhưng không xóa DOM */
+    #pulseIrrigation { display: none !important; }
   </style>
 </head>
 <body>
@@ -176,7 +175,7 @@
           <div class="value" id="irrigationState">Trạng thái: <strong>TẮT</strong></div>
           <div class="controls" style="margin-top:8px">
             <button class="btn" id="toggleIrrigation">Bật tưới</button>
-            <button class="btn secondary" id="pulseIrrigation">Nháy tưới 10s</button>
+            <button class="btn secondary" id="pulseIrrigation">Nháy tưới 10s</button> <!-- bị ẩn bởi CSS -->
             <button class="btn danger" id="stopIrrigation">Tắt tưới</button>
           </div>
           <div class="small" id="lastAction">—</div>
@@ -188,6 +187,7 @@
   <!-- Era SDK -->
   <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.6/src/index.js"></script>
   <script>
+    /** ---------------- UI helpers ---------------- **/
     const fields=['soilTemp','soilMoisture','soilPH','soilEC','phosphorus','nitrogen','potassium','airTemp','airHumidity'];
     const units={soilTemp:'°C',soilMoisture:'%',soilPH:'pH',soilEC:'mS/cm',phosphorus:'mg/kg',nitrogen:'mg/kg',potassium:'mg/kg',airTemp:'°C',airHumidity:'%'};
     const CIRCUM=339.292; let last={};
@@ -203,18 +203,21 @@
     }
     function updateBar(card,val,max){
       const bar=card.querySelector('.bar-fill'); if(!bar) return;
-      const percent=clamp01(val/max)*100; bar.style.width=percent+'%';
+      const percent=clamp01((+val||0)/max)*100; bar.style.width=percent+'%';
     }
     function updateCard(k,v){
       const c=document.querySelector(`[data-key="${k}"]`); if(!c) return;
       const ve=c.querySelector('.val'); const te=c.querySelector('[data-trend]'); const prev=last[k];
-      ve.textContent=(v??'--'); if(units[k]) c.querySelector('.unit').textContent=units[k];
+      if(ve) ve.textContent=(v??'--');
+      const u=c.querySelector('.unit'); if(u && units[k]) u.textContent=units[k];
+
       if(typeof prev==='number'&&typeof v==='number'){
         const d=Math.round((v-prev)*100)/100;
         te.textContent=d===0?'—':(d>0?`↑ +${d}`:`↓ ${d}`);
         te.style.color=d>0?'var(--ok)':'var(--warn)';
       }
       last[k]=typeof v==='number'?v:prev;
+
       if(k==='soilMoisture'||k==='airHumidity') updateRing(c,Number(v));
       if(['phosphorus','nitrogen','potassium'].includes(k)) updateBar(c,Number(v),200);
       if(k==='soilPH') updateBar(c,Number(v),14);
@@ -224,22 +227,32 @@
       if(p&&typeof p.irrigationOn==='boolean') setIrrigationState(p.irrigationOn);
     }
 
+    /** ---------------- Irrigation buttons ---------------- **/
     const irrigationStateEl=document.getElementById('irrigationState');
     const lastActionEl=document.getElementById('lastAction');
+    const btnToggle=document.getElementById('toggleIrrigation');
+    const btnStop =document.getElementById('stopIrrigation');
+    // giữ pulseIrrigation trong DOM nhưng KHÔNG gắn listener
     let irrigationOn=false;
+
     function setIrrigationState(on){
       irrigationOn=!!on;
       irrigationStateEl.innerHTML=`Trạng thái: <strong>${on?'BẬT':'TẮT'}</strong>`;
-      document.getElementById('toggleIrrigation').textContent=on?'Tắt tưới':'Bật tưới';
+      btnToggle.textContent=on?'Tắt tưới':'Bật tưới';
     }
-    document.getElementById('toggleIrrigation').onclick=()=>{ setIrrigationState(!irrigationOn); lastActionEl.textContent='Đổi trạng thái'; };
-    document.getElementById('pulseIrrigation').onclick=()=>{ lastActionEl.textContent='Nháy tưới 10s'; };
-    document.getElementById('stopIrrigation').onclick=()=>{ setIrrigationState(false); lastActionEl.textContent='Dừng tưới'; };
 
-    /* ===== ERA WIDGET ===== */
-    let configsoilTemp=null, configsoilMoisture=null, configsoilPH=null, configsoilEC=null,
-        configphosphorus=null, confignitrogen=null, configpotassium=null, configairTemp=null, configairHumidity=null,
-        actions=[];
+    /** ---------------- EraWidget init (fallback an toàn) ---------------- **/
+    const widgetInstance = (function(){
+      if (window.eraWidget && typeof window.eraWidget.init==='function') return window.eraWidget;
+      if (window.EraWidget) return new window.EraWidget();
+      console.warn('EraWidget chưa sẵn sàng, dùng stub để tránh lỗi.');
+      return {
+        init(){}, ready(){}, requestAdjustMobileHeight(){}, triggerAction(){ console.warn('triggerAction khi SDK chưa sẵn sàng'); }
+      };
+    })();
+
+    let actions = []; // sẽ nhận từ configuration
+    let hasSDKReady = false;
 
     const pick=(cfg,values)=>{
       if(!cfg||!cfg.id) return undefined;
@@ -248,40 +261,107 @@
       return v;
     };
 
-    eraWidget.init({
+    const connDot  = document.getElementById('connDot');
+    const connText = document.getElementById('connText');
+    function setConn(ok,msg){
+      if(connDot) connDot.style.background = ok ? 'var(--accent)' : 'var(--danger)';
+      if(connText) connText.textContent = msg || (ok ? 'Đang chạy' : 'Mất kết nối');
+    }
+
+    widgetInstance.init({
       ready:false,
       needRealtimeConfigs:true,
       needHistoryConfigs:true,
       needActions:true,
       maxRealtimeConfigsCount:12,
       maxHistoryConfigsCount:12,
-      maxActionsCount:2,
-      mobileHeight: 300, // chiều cao khởi tạo, sẽ cập nhật động bên dưới
+      maxActionsCount:2, /* chỉ cần Bật/Tắt */
+      mobileHeight: 300,
 
       onConfiguration:(configuration)=>{
         const rc=configuration.realtime_configs||[];
-        configsoilTemp    = rc[0]; configsoilMoisture=rc[1]; configsoilPH=rc[2]; configsoilEC=rc[3];
-        configphosphorus  = rc[4]; confignitrogen   = rc[5]; configpotassium=rc[6];
-        configairTemp     = rc[7]; configairHumidity=rc[8];
-        actions=configuration.actions||[];
-        if(configuration.url){ document.getElementById('subtitle').textContent=`Nguồn dữ liệu: ${configuration.url}`; }
+        const configsoilTemp     = rc[0],
+              configsoilMoisture = rc[1],
+              configsoilPH       = rc[2],
+              configsoilEC       = rc[3],
+              configphosphorus   = rc[4],
+              confignitrogen     = rc[5],
+              configpotassium    = rc[6],
+              configairTemp      = rc[7],
+              configairHumidity  = rc[8];
+
+        window.__cfg = {
+          configsoilTemp, configsoilMoisture, configsoilPH, configsoilEC,
+          configphosphorus, confignitrogen, configpotassium, configairTemp, configairHumidity
+        };
+
+        actions = configuration.actions||[]; // kỳ vọng: [Bật, Tắt]
+        if(configuration.url){
+          document.getElementById('subtitle').textContent=`Nguồn dữ liệu: ${configuration.url}`;
+        }
         requestAnimationFrame(requestHeight);
+        setConn(true,'Đang chạy');
       },
       onValues:(values={})=>{
+        const C = window.__cfg || {};
         const payload={
-          soilTemp:pick(configsoilTemp,values), soilMoisture:pick(configsoilMoisture,values),
-          soilPH:pick(configsoilPH,values), soilEC:pick(configsoilEC,values),
-          phosphorus:pick(configphosphorus,values), nitrogen:pick(confignitrogen,values),
-          potassium:pick(configpotassium,values), airTemp:pick(configairTemp,values),
-          airHumidity:pick(configairHumidity,values)
+          soilTemp:pick(C.configsoilTemp,values),
+          soilMoisture:pick(C.configsoilMoisture,values),
+          soilPH:pick(C.configsoilPH,values),
+          soilEC:pick(C.configsoilEC,values),
+          phosphorus:pick(C.configphosphorus,values),
+          nitrogen:pick(C.confignitrogen,values),
+          potassium:pick(C.configpotassium,values),
+          airTemp:pick(C.configairTemp,values),
+          airHumidity:pick(C.configairHumidity,values)
         };
         applyPayload(payload);
-        requestAnimationFrame(requestHeight); // chiều cao thay đổi → báo lại cho app
+        requestAnimationFrame(requestHeight);
       },
+      onError:(e)=>{
+        console.error('EraWidget error:', e);
+        setConn(false,'Lỗi dữ liệu');
+      }
     });
-    eraWidget.ready();
 
-    /* === Auto-height cho app E-Ra (không dùng 100dvh) === */
+    widgetInstance.ready?.();
+    hasSDKReady = true;
+
+    /** ---------------- Map 2 hành động: Bật/Tắt ---------------- **/
+    // actions[0] = Bật tưới
+    // actions[1] = Tắt tưới
+    btnToggle.addEventListener('click', ()=>{
+      if(!hasSDKReady){ lastActionEl.textContent='SDK chưa sẵn sàng'; return; }
+      const idx = irrigationOn ? 1 : 0; // đang bật -> tắt, đang tắt -> bật
+      const act = actions[idx]?.action;
+      if (act){
+        widgetInstance.triggerAction(act, null);
+        setIrrigationState(!irrigationOn);
+        lastActionEl.textContent = irrigationOn ? 'Đã bật tưới' : 'Đã tắt tưới';
+      } else {
+        lastActionEl.textContent='Chưa cấu hình action Bật/Tắt';
+      }
+    });
+
+    btnStop.addEventListener('click', ()=>{
+      if(!hasSDKReady){ lastActionEl.textContent='SDK chưa sẵn sàng'; return; }
+      const act = actions[1]?.action; // Tắt tưới
+      if (act){
+        widgetInstance.triggerAction(act, null);
+        setIrrigationState(false);
+        lastActionEl.textContent='Dừng tưới';
+      } else {
+        lastActionEl.textContent='Chưa cấu hình action Tắt';
+      }
+    });
+
+    /** ---------------- Refresh & auto-height ---------------- **/
+    document.getElementById('refreshBtn').addEventListener('click', ()=>{
+      requestAnimationFrame(requestHeight);
+      // Muốn reload toàn trang: bật dòng dưới
+      // location.reload();
+    });
+
     function calcIframeHeight(){
       const de=document.documentElement, b=document.body||{};
       return Math.max(de.scrollHeight, de.offsetHeight, b.scrollHeight||0, b.offsetHeight||0);
@@ -291,7 +371,7 @@
       if(rafId) cancelAnimationFrame(rafId);
       rafId=requestAnimationFrame(()=>{
         const h=calcIframeHeight();
-        try{ eraWidget.requestAdjustMobileHeight(h); }catch(e){}
+        try{ widgetInstance.requestAdjustMobileHeight(h); }catch(e){}
       });
     }
     ['load','resize','orientationchange'].forEach(ev=>
