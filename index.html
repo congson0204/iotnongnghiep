@@ -16,25 +16,33 @@
     [data-theme="light"]{--bg:#f6f7fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#16a34a;--ring:#e2e8f0;--bar-bg:#e2e8f0;--bar-fill:#2563eb}
     *{box-sizing:border-box}
 
-    /* NỀN của trang con: để trong suốt để hòa nền trắng của app E-Ra */
+    /* TRANG CON: nền trong suốt để hòa nền app E-Ra */
     html, body { margin:0; padding:0; width:100%; min-height:100%; overflow-x:hidden; }
     body { background: transparent; font-family:system-ui, Segoe UI, Roboto; color:var(--text); }
 
-    /* VỎ NGOÀI + PANEL TỐI (giống ảnh mẫu) */
+    /* VỎ NGOÀI + PANEL */
     .shell{
-      max-width:1180px;       /* điều chỉnh theo ý (1100–1200) */
+      max-width:1180px;
       margin:0 auto;
       padding-top:max(12px, env(safe-area-inset-top));
       padding-bottom:max(12px, env(safe-area-inset-bottom));
       padding-left:max(12px, env(safe-area-inset-left));
       padding-right:max(12px, env(safe-area-inset-right));
     }
+
+    /* Sizer đỡ chiều cao sau khi scale (transform không đẩy layout) */
+    .panel-sizer{ position:relative; height:auto; }
+
+    /* Panel thiết kế theo bề rộng desktop rồi scale xuống mobile */
     .panel{
+      width:1180px;                 /* DESKTOP DESIGN WIDTH — chỉnh tuỳ ý (1024/1180/1280) */
+      margin:0 auto;
       background:#0b1220;
       border:1px solid var(--ring);
       border-radius:16px;
       padding:16px;
       box-shadow:0 8px 24px rgba(0,0,0,.25);
+      transform-origin: top center; /* quan trọng để scale đẹp từ trên xuống */
     }
 
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:4px 4px 0}
@@ -48,11 +56,8 @@
     .btn.secondary{background:transparent;color:var(--text);border:1px solid var(--ring)}
     .btn.danger{background:var(--danger);color:#fff}
 
-    /* LƯỚI CARD: desktop 4c → tablet 3/2c → mobile 1c */
+    /* LUÔN 4 CỘT (desktop & mobile), không dùng media query đổi cột */
     .grid{display:grid;gap:12px;grid-template-columns:repeat(4,1fr)}
-    @media (max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:560px){.grid{grid-template-columns:1fr}}
 
     .card{background:var(--card);border:1px solid var(--ring);border-radius:14px;padding:14px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.15)}
     .label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
@@ -63,7 +68,7 @@
     .small{font-size:12px;color:var(--muted)}
     .flex{display:flex;align-items:center;gap:14px}
 
-    /* RING 0–100% */
+    /* Ring 0–100% */
     .ring-wrap{width:110px;height:110px;margin-top:6px;position:relative}
     .ring{width:110px;height:110px;display:block}
     .ring-bg{fill:none;stroke:var(--ring);stroke-width:10}
@@ -72,12 +77,11 @@
     .ring-center .ring-val{font-size:22px}
     .ring-center .ring-unit{font-size:12px;color:var(--muted);margin-left:4px}
 
-    /* PROGRESS BAR */
+    /* Progress bar */
     .bar-wrap{width:100%;height:14px;background:var(--bar-bg);border-radius:6px;overflow:hidden;margin-top:6px}
     .bar-fill{height:100%;background:var(--bar-fill);width:0%;transition:width .5s ease}
 
-    /* SCALE responsive nhỏ */
-    body{padding:clamp(0px,0vw,0px)} /* panel đã có padding riêng */
+    /* scale text nhỏ theo viewport (nhẹ nhàng) */
     .label{font-size:clamp(11px,2.2vw,13px)}
     .label .icon{font-size:clamp(18px,3.8vw,20px)}
     .value{font-size:clamp(18px,4vw,22px)}
@@ -90,111 +94,113 @@
 </head>
 <body>
   <div class="shell">
-    <div class="panel">
-      <header>
-        <div>
-          <div class="title">GIÁM SÁT VÀ PHÂN TÍCH CHỈ SỐ TRONG ĐẤT</div>
-          <div class="sub" id="subtitle">Nguồn dữ liệu: demo cục bộ</div>
-        </div>
-        <div class="controls">
-          <span class="pill"><span class="status-dot" id="connDot"></span><span id="connText">Đang chạy</span></span>
-          <span class="pill" id="modeText">Chế độ: AUTO</span>
-          <button id="refreshBtn" class="btn secondary">↻ Làm mới</button>
-        </div>
-      </header>
+    <div class="panel-sizer"><!-- JS sẽ set height thực tế sau khi scale -->
+      <div class="panel">
+        <header>
+          <div>
+            <div class="title">GIÁM SÁT VÀ PHÂN TÍCH CHỈ SỐ TRONG ĐẤT</div>
+            <div class="sub" id="subtitle">Nguồn dữ liệu: demo cục bộ</div>
+          </div>
+          <div class="controls">
+            <span class="pill"><span class="status-dot" id="connDot"></span><span id="connText">Đang chạy</span></span>
+            <span class="pill" id="modeText">Chế độ: AUTO</span>
+            <button id="refreshBtn" class="btn secondary">↻ Làm mới</button>
+          </div>
+        </header>
 
-      <section class="grid">
-        <div class="card" data-key="soilTemp">
-          <div class="label"><span class="icon">🌡️</span> Nhiệt độ trong đất</div>
-          <div class="value"><span class="val">--</span><span class="unit">°C</span></div>
-          <div class="trend" data-trend></div>
-        </div>
+        <section class="grid">
+          <div class="card" data-key="soilTemp">
+            <div class="label"><span class="icon">🌡️</span> Nhiệt độ trong đất</div>
+            <div class="value"><span class="val">--</span><span class="unit">°C</span></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="soilMoisture">
-          <div class="label"><span class="icon">💧</span> Độ ẩm trong đất</div>
-          <div class="flex">
-            <div class="ring-wrap">
-              <svg class="ring" viewBox="0 0 120 120">
-                <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
-                <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
-              </svg>
-              <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
+          <div class="card" data-key="soilMoisture">
+            <div class="label"><span class="icon">💧</span> Độ ẩm trong đất</div>
+            <div class="flex">
+              <div class="ring-wrap">
+                <svg class="ring" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
+                  <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
+                </svg>
+                <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
+              </div>
+              <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
             </div>
-            <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
+            <div class="trend" data-trend></div>
           </div>
-          <div class="trend" data-trend></div>
-        </div>
 
-        <div class="card" data-key="soilPH">
-          <div class="label"><span class="icon">⚗️</span> Độ pH</div>
-          <div class="value"><span class="val">--</span><span class="unit">pH</span></div>
-          <div class="bar-wrap"><div class="bar-fill"></div></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="soilPH">
+            <div class="label"><span class="icon">⚗️</span> Độ pH</div>
+            <div class="value"><span class="val">--</span><span class="unit">pH</span></div>
+            <div class="bar-wrap"><div class="bar-fill"></div></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="soilEC">
-          <div class="label"><span class="icon">🔌</span> Độ dẫn điện DC</div>
-          <div class="value"><span class="val">--</span><span class="unit">mS/cm</span></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="soilEC">
+            <div class="label"><span class="icon">🔌</span> Độ dẫn điện DC</div>
+            <div class="value"><span class="val">--</span><span class="unit">mS/cm</span></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="phosphorus">
-          <div class="label"><span class="icon">🟣</span> Photpho (P)</div>
-          <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
-          <div class="bar-wrap"><div class="bar-fill"></div></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="phosphorus">
+            <div class="label"><span class="icon">🟣</span> Photpho (P)</div>
+            <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
+            <div class="bar-wrap"><div class="bar-fill"></div></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="nitrogen">
-          <div class="label"><span class="icon">🟢</span> Nito (N)</div>
-          <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
-          <div class="bar-wrap"><div class="bar-fill"></div></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="nitrogen">
+            <div class="label"><span class="icon">🟢</span> Nito (N)</div>
+            <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
+            <div class="bar-wrap"><div class="bar-fill"></div></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="potassium">
-          <div class="label"><span class="icon">🟡</span> Kali (K)</div>
-          <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
-          <div class="bar-wrap"><div class="bar-fill"></div></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="potassium">
+            <div class="label"><span class="icon">🟡</span> Kali (K)</div>
+            <div class="value"><span class="val">--</span><span class="unit">mg/kg</span></div>
+            <div class="bar-wrap"><div class="bar-fill"></div></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="airTemp">
-          <div class="label"><span class="icon">🌤️</span> Nhiệt độ không khí</div>
-          <div class="value"><span class="val">--</span><span class="unit">°C</span></div>
-          <div class="trend" data-trend></div>
-        </div>
+          <div class="card" data-key="airTemp">
+            <div class="label"><span class="icon">🌤️</span> Nhiệt độ không khí</div>
+            <div class="value"><span class="val">--</span><span class="unit">°C</span></div>
+            <div class="trend" data-trend></div>
+          </div>
 
-        <div class="card" data-key="airHumidity">
-          <div class="label"><span class="icon">☁️</span> Độ ẩm không khí</div>
-          <div class="flex">
-            <div class="ring-wrap">
-              <svg class="ring" viewBox="0 0 120 120">
-                <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
-                <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
-              </svg>
-              <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
+          <div class="card" data-key="airHumidity">
+            <div class="label"><span class="icon">☁️</span> Độ ẩm không khí</div>
+            <div class="flex">
+              <div class="ring-wrap">
+                <svg class="ring" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
+                  <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
+                </svg>
+                <div class="ring-center"><span class="ring-val">--</span><span class="ring-unit">%</span></div>
+              </div>
+              <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
             </div>
-            <div class="value" style="margin:0"><span class="val">--</span><span class="unit">%</span></div>
+            <div class="trend" data-trend></div>
           </div>
-          <div class="trend" data-trend></div>
-        </div>
 
-        <div class="card" id="irrigationCard">
-          <div class="label"><span class="icon">🚿</span> Điều khiển tưới cây</div>
-          <div class="value" id="irrigationState">Trạng thái: <strong>TẮT</strong></div>
-          <div class="controls" style="margin-top:8px">
-            <button class="btn" id="toggleIrrigation">Bật tưới</button>
-            <button class="btn secondary" id="pulseIrrigation">Nháy tưới 10s</button>
-            <button class="btn danger" id="stopIrrigation">Tắt tưới</button>
+          <div class="card" id="irrigationCard">
+            <div class="label"><span class="icon">🚿</span> Điều khiển tưới cây</div>
+            <div class="value" id="irrigationState">Trạng thái: <strong>TẮT</strong></div>
+            <div class="controls" style="margin-top:8px">
+              <button class="btn" id="toggleIrrigation">Bật tưới</button>
+              <button class="btn secondary" id="pulseIrrigation">Nháy tưới 10s</button>
+              <button class="btn danger" id="stopIrrigation">Tắt tưới</button>
+            </div>
+            <div class="small" id="lastAction">—</div>
           </div>
-          <div class="small" id="lastAction">—</div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </div>
 
-  <!-- Era SDK -->
+  <!-- Era SDK: global window.eraWidget -->
   <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.6/src/index.js"></script>
   <script>
     const fields=['soilTemp','soilMoisture','soilPH','soilEC','phosphorus','nitrogen','potassium','airTemp','airHumidity'];
@@ -246,7 +252,7 @@
     document.getElementById('pulseIrrigation').onclick=()=>{ lastActionEl.textContent='Nháy tưới 10s'; };
     document.getElementById('stopIrrigation').onclick=()=>{ setIrrigationState(false); lastActionEl.textContent='Dừng tưới'; };
 
-    /* ERA */
+    /* ===== ERA WIDGET ===== */
     let configsoilTemp=null, configsoilMoisture=null, configsoilPH=null, configsoilEC=null,
         configphosphorus=null, confignitrogen=null, configpotassium=null, configairTemp=null, configairHumidity=null,
         actions=[];
@@ -266,13 +272,18 @@
       maxRealtimeConfigsCount:12,
       maxHistoryConfigsCount:12,
       maxActionsCount:2,
+
+      /* Chiều cao ban đầu cho mobile app — sẽ được update động khi scale */
+      mobileHeight: 520,
+
       onConfiguration:(configuration)=>{
         const rc=configuration.realtime_configs||[];
         configsoilTemp    = rc[0]; configsoilMoisture=rc[1]; configsoilPH=rc[2]; configsoilEC=rc[3];
-        configphosphorus  = rc[4]; confignitrogen   =rc[5]; configpotassium=rc[6];
+        configphosphorus  = rc[4]; confignitrogen   = rc[5]; configpotassium=rc[6];
         configairTemp     = rc[7]; configairHumidity=rc[8];
         actions=configuration.actions||[];
         if(configuration.url){ document.getElementById('subtitle').textContent=`Nguồn dữ liệu: ${configuration.url}`; }
+        requestAnimationFrame(applyScaleAndResize);
       },
       onValues:(values={})=>{
         const payload={
@@ -283,9 +294,43 @@
           airHumidity:pick(configairHumidity,values)
         };
         applyPayload(payload);
+        requestAnimationFrame(applyScaleAndResize);  // re-scale khi nội dung thay đổi
       },
     });
     eraWidget.ready();
+
+    /* ===== Giữ 4 cột trên mobile: scale panel để vừa chiều ngang ===== */
+    const DESIGN_WIDTH = 1180; // khớp với .panel{width:1180px}
+    function applyScaleAndResize(){
+      const shell = document.querySelector('.shell');
+      const panel = document.querySelector('.panel');
+      const sizer = document.querySelector('.panel-sizer');
+      if (!shell || !panel || !sizer) return;
+
+      const cs = getComputedStyle(shell);
+      const padH = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+      const vw = document.documentElement.clientWidth;
+
+      // scale = (bề rộng khả dụng) / DESIGN_WIDTH, tối đa 1 (không phóng to)
+      const scale = Math.min(1, (vw - padH) / DESIGN_WIDTH);
+
+      // Áp scale cho panel
+      panel.style.transform = `scale(${scale})`;
+
+      // Tính chiều cao hiển thị sau khi scale để wrapper “đỡ” layout
+      const scaledHeight = Math.ceil(panel.offsetHeight * scale);
+      sizer.style.height = scaledHeight + 'px';
+
+      // Báo cho app E-Ra nới chiều cao iFrame
+      try { eraWidget.requestAdjustMobileHeight(scaledHeight); } catch(e) {}
+    }
+
+    // Gọi khi load/resize/orientation, đảm bảo mượt
+    ['load','resize','orientationchange'].forEach(ev =>
+      window.addEventListener(ev, () => requestAnimationFrame(applyScaleAndResize), {passive:true})
+    );
+    // Lần đầu
+    applyScaleAndResize();
   </script>
 </body>
 </html>
